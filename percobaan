@@ -1,0 +1,368 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { BookOpen, Zap, BrainCircuit, Loader, AlertTriangle, Download, School, FileText } from 'lucide-react';
+
+// --- DATA KURIKULUM (SESUAI DOKUMEN) ---
+const capaianPembelajaranData = {
+  'E': {
+    'Menyimak': 'Mengevaluasi gagasan, pandangan, arahan, dan/atau pesan dari teks nonsastra berbentuk teks aural (teks yang dibacakan dan/atau didengarkan); dan mengevaluasi unsur intrinsik dan ekstrinsik teks sastra berbentuk teks aural.',
+    'Membaca dan Memirsa': 'Mengevaluasi informasi berupa gagasan, pandangan, arahan, dan/atau pesan dari berbagai tipe teks berwujud visual dan/atau audiovisual untuk menemukan makna yang tersurat dan tersirat; menginterpretasi informasi untuk mengungkapkan gagasan dan perasaan (simpati, peduli, dan empati) dari berbagai tipe teks berwujud teks visual dan/atau audiovisual secara kreatif; mengevaluasi kualitas dan/atau kredibilitas dari berbagai tipe teks berwujud teks visual dan/atau audiovisual menggunakan sumber informasi lain; dan membandingkan isi teks.',
+    'Berbicara dan Mempresentasikan': 'Mempresentasikan gagasan, pandangan, arahan, dan/atau pesan berbagai tipe teks berbentuk monolog, dialog, dan/atau gelar wicara secara sistematis, kritis, dan/atau kreatif; dan mengungkapkan kepedulian dari berbagai tipe teks dan/atau teks multimodal secara kreatif.',
+    'Menulis': 'Menulis gagasan, pandangan, arahan, pesan, dan/atau imajinasi dalam berbagai tipe teks secara logis, kritis, dan kreatif; dan memublikasikan hasil karya di media cetak, elektronik, dan/atau digital.',
+  },
+  'F': {
+    'Menyimak': 'Mengevaluasi gagasan, perasaan, pandangan, arahan, dan/atau pesan dari teks nonsastra berbentuk teks aural (teks yang dibacakan dan/atau didengarkan); dan mengapresiasi teks sastra berbentuk teks aural.',
+    'Membaca dan Memirsa': 'Mengevaluasi informasi berupa gagasan, perasaan, pandangan, arahan, dan/atau pesan dari berbagai tipe teks berwujud teks visual dan/atau audiovisual untuk menemukan makna yang tersurat dan tersirat berdasarkan kaidah logika berpikir; merefleksi gagasan dan pandangan berdasarkan kaidah logika berpikir dari berbagai tipe teks berwujud teks visual dan/atau audiovisual; dan mengapresiasi berbagai tipe teks berwujud teks visual dan/atau audiovisual.',
+    'Berbicara dan Mempresentasikan': 'Mempresentasikan gagasan, perasaan, pandangan, arahan, pesan, dan/atau kreativitas berbahasa dalam berbagai tipe teks berbentuk monolog, dialog, dan/atau gelar wicara dan/atau berbagai tipe teks secara logis, sistematis, kritis, dan kreatif sesuai dengan norma kesopanan dan budaya Indonesia; menyajikan karya sastra secara kreatif dan menarik; dan mempertahankan hasil penelitian dengan argumentasi.',
+    'Menulis': 'Menulis gagasan, pandangan, imajinasi, dan/atau pengetahuan metakognisi dalam berbagai tipe teks secara logis, kritis, dan kreatif; dan memublikasikan hasil karya di media cetak, elektronik, dan/atau digital.',
+  }
+};
+const materiPokokData = {
+  'E': {
+    'Ganjil': ['Teks Laporan Hasil Observasi (LHO)', 'Teks Eksposisi', 'Teks Anekdot', 'Hikayat'],
+    'Genap': ['Teks Negosiasi', 'Teks Debat', 'Teks Biografi', 'Puisi'],
+  },
+  'F': {
+    'Ganjil': ['Surat Lamaran Pekerjaan', 'Teks Cerita Sejarah', 'Teks Editorial', 'Artikel Ilmiah Populer', 'Proposal Penelitian', 'Karya Ilmiah'],
+    'Genap': ['Kritik Sastra dan Esai', 'Resensi / Ulasan Karya', 'Drama', 'Cerita Pendek (Cerpen)', 'Teks Eksplanasi', 'Ceramah dan Pidato Persuasif'],
+  }
+};
+const tujuanPembelajaranData = {
+    'Teks Laporan Hasil Observasi (LHO)': ['Mengidentifikasi isi pokok, struktur, dan ciri kebahasaan dalam teks LHO.', 'Mengevaluasi informasi (gagasan, pikiran, pandangan) dalam teks LHO yang disimak atau dibaca.', 'Menganalisis keakuratan dan kelogisan data untuk menemukan makna tersurat dan tersirat.', 'Menulis gagasan dan hasil pengamatan dalam bentuk teks LHO yang terstruktur dan logis.', 'Mempresentasikan hasil observasi secara sistematis, kritis, dan kreatif.'],
+    'Teks Eksposisi': ['Menganalisis struktur (tesis, argumen, penegasan ulang) dan kebahasaan teks eksposisi.', 'Mengevaluasi gagasan, pandangan, dan pesan dalam teks eksposisi yang didengar atau dibaca.', 'Menginterpretasi informasi untuk mengungkapkan gagasan secara kreatif.', 'Menulis teks eksposisi berdasarkan isu aktual dengan argumen yang logis dan kritis.', 'Menyampaikan argumen secara lisan dengan sistematis dan santun.'],
+    'Teks Anekdot': ['Menganalisis struktur, kebahasaan, dan makna tersirat (kritik sosial) dalam anekdot.', 'Mengevaluasi pesan dan kritik yang disampaikan dalam teks anekdot lisan maupun tulisan.', 'Membandingkan isi dan gaya penyajian antara anekdot dengan humor lain.', 'Menulis teks anekdot berdasarkan pengalaman atau pengamatan secara kreatif.', 'Menceritakan kembali atau mementaskan teks anekdot dengan intonasi dan ekspresi yang sesuai.'],
+    'Hikayat': ['Mengidentifikasi karakteristik, nilai-nilai, dan isi pokok dalam hikayat.', 'Membandingkan nilai dan kebahasaan dalam hikayat dengan cerita pendek (cerpen).', 'Mengevaluasi unsur intrinsik dan ekstrinsik dalam hikayat yang didengar atau dibaca.', 'Menceritakan kembali isi hikayat ke dalam bentuk teks yang lebih modern (misal: cerpen).', 'Mengungkapkan gagasan dan perasaan (simpati, empati) dari hikayat secara kreatif.'],
+    'Teks Negosiasi': ['Menganalisis struktur (orientasi, pengajuan, penawaran, persetujuan) dan kebahasaan teks negosiasi.', 'Mengevaluasi informasi dan argumen dari tuturan negosiasi yang disimak.', 'Mengajukan, menawar, dan menyepakati solusi dalam dialog negosiasi.', 'Menulis teks negosiasi dalam bentuk dialog atau narasi secara logis dan kreatif.', 'Mempresentasikan atau melakukan simulasi negosiasi secara efektif dan santun.'],
+    'Teks Debat': ['Merumuskan mosi berdasarkan isu atau permasalahan yang berkembang.', 'Menganalisis argumen, sanggahan, dan simpulan dalam debat.', 'Mengevaluasi pandangan dan argumen tim afirmasi dan oposisi dalam debat yang disimak.', 'Menyusun kerangka argumen yang kuat untuk mendukung atau menolak mosi.', 'Mempraktikkan debat dengan mematuhi etika dan norma berpendapat.'],
+    'Teks Biografi': ['Menganalisis struktur, kebahasaan, dan hal-hal yang dapat diteladani dari tokoh dalam biografi.', 'Mengevaluasi informasi, gagasan, dan pandangan dalam teks biografi yang dibaca atau disimak.', 'Mengungkapkan kembali keteladanan tokoh dalam bentuk teks lain secara kreatif.', 'Menulis teks biografi singkat tentang tokoh yang menginspirasi secara logis dan kritis.', 'Mempresentasikan hasil analisis atau biografi yang ditulis dengan menarik.'],
+    'Puisi': ['Menganalisis unsur fisik dan batin dalam puisi.', 'Mengevaluasi pesan, tema, dan suasana dalam puisi yang didengar (musikalisasi) atau dibaca.', 'Menginterpretasi makna dan perasaan dalam puisi secara kreatif.', 'Menulis puisi dengan memperhatikan diksi, imaji, dan majas.', 'Mendeklamasikan atau memusikalisasikan puisi dengan penghayatan yang baik.'],
+    'Surat Lamaran Pekerjaan': ['Mengidentifikasi isi, sistematika, dan kebahasaan surat lamaran pekerjaan.', 'Menganalisis unsur-unsur penting dalam iklan lowongan pekerjaan.', 'Mengevaluasi informasi dari berbagai sumber terkait dunia kerja.', 'Menulis surat lamaran pekerjaan yang baik, benar, dan sistematis.', 'Mempresentasikan atau melakukan simulasi wawancara kerja sederhana.'],
+    'Teks Cerita Sejarah': ['Menganalisis informasi (fakta dan opini) dan struktur teks cerita sejarah.', 'Mengevaluasi nilai-nilai dan pesan dalam teks cerita (novel) sejarah.', 'Membandingkan informasi sejarah dalam novel dengan sumber sejarah lain.', 'Menulis teks cerita sejarah pribadi atau fiksi dengan latar sejarah yang logis.', 'Merefleksikan pandangan dari teks cerita sejarah dan menyajikannya secara lisan/tulisan.'],
+    'Teks Editorial': ['Menganalisis struktur, argumen, dan kebahasaan dalam teks editorial.', 'Mengevaluasi fakta dan opini serta keberpihakan penulis dalam teks editorial.', 'Merefleksikan gagasan dan pandangan dari teks editorial berdasarkan logika berpikir.', 'Menulis teks editorial berdasarkan isu aktual dengan argumen yang kuat.', 'Menyampaikan pendapat atau tanggapan terhadap isu dalam editorial secara lisan.'],
+    'Kritik Sastra dan Esai': ['Membandingkan kritik sastra dan esai berdasarkan pengetahuan dan sudut pandang penulisnya.', 'Menganalisis sistematika dan kebahasaan kritik dan esai.', 'Mengevaluasi gagasan, pandangan, dan argumen dalam kritik atau esai yang dibaca.', 'Menulis kritik atau esai sastra berdasarkan karya sastra dengan argumen yang logis.', 'Mempresentasikan hasil analisis atau tulisan kritik/esai dengan argumentasi yang kuat.'],
+    'Resensi / Ulasan Karya': ['Menganalisis isi, struktur, dan kebahasaan dalam resensi karya fiksi dan nonfiksi.', 'Mengevaluasi keunggulan dan kelemahan yang disajikan dalam sebuah resensi.', 'Mengapresiasi dan merefleksikan gagasan dari karya yang diulas.', 'Menulis resensi sebuah buku (fiksi/nonfiksi) secara objektif dan sistematis.', 'Mempresentasikan ulasan karya secara menarik dan persuasif.'],
+    'Drama': ['Menganalisis isi, alur, babak, dan konflik dalam naskah drama.', 'Mengevaluasi dan mengapresiasi pementasan drama yang disaksikan (langsung/video).', 'Menginterpretasi naskah drama untuk dipentaskan.', 'Menulis atau memodifikasi naskah drama satu babak secara kreatif.', 'Mementaskan penggalan drama dengan memperhatikan aspek verbal dan nonverbal.'],
+    'Artikel Ilmiah Populer': ['Menganalisis struktur dan kebahasaan artikel ilmiah populer.', 'Mengevaluasi informasi, fakta, dan opini dalam artikel ilmiah.', 'Merefleksikan gagasan dari artikel untuk diterapkan dalam kehidupan.', 'Menulis artikel ilmiah populer berdasarkan hasil penelitian atau pengamatan.', 'Mempublikasikan artikel ilmiah populer di media massa (mading, blog, dll).'],
+    'Proposal Penelitian': ['Menganalisis isi, sistematika, dan kebahasaan suatu proposal.', 'Mengevaluasi informasi penting dalam proposal penelitian.', 'Menemukan masalah dan merumuskan latar belakang untuk proposal.', 'Menulis kerangka proposal penelitian sederhana secara logis dan sistematis.', 'Mempresentasikan rencana penelitian dalam bentuk proposal.'],
+    'Karya Ilmiah': ['Menganalisis sistematika dan kebahasaan karya ilmiah (makalah).', 'Mengevaluasi gagasan, data, dan simpulan dalam sebuah karya ilmiah.', 'Merefleksikan temuan dari karya ilmiah untuk pengembangan wawasan.', 'Menulis karya ilmiah sederhana berdasarkan kaidah yang benar.', 'Mempertahankan hasil penelitian dalam diskusi atau seminar kelas.'],
+    'Cerita Pendek (Cerpen)': ['Menganalisis unsur-unsur intrinsik dan ekstrinsik dalam cerpen.', 'Mengevaluasi dan mengapresiasi nilai-nilai kehidupan dalam cerpen.', 'Membandingkan alur, tema, dan gaya bahasa beberapa cerpen.', 'Menulis cerpen berdasarkan pengalaman pribadi atau imajinasi.', 'Menyajikan ulasan atau apresiasi cerpen secara lisan atau tulisan.'],
+    'Teks Eksplanasi': ['Menganalisis struktur dan kebahasaan teks eksplanasi.', 'Mengevaluasi informasi (fakta dan proses) dalam teks eksplanasi.', 'Membandingkan pola pengembangan dalam beberapa teks eksplanasi.', 'Menulis teks eksplanasi berdasarkan pengamatan fenomena alam/sosial.', 'Mempresentasikan proses terjadinya suatu fenomena secara logis.'],
+    'Ceramah dan Pidato Persuasif': ['Menganalisis isi, struktur, dan kebahasaan dalam ceramah/pidato.', 'Mengevaluasi pesan dan argumen dalam ceramah/pidato yang disimak.', 'Menemukan informasi penting dan menyimpulkan isi ceramah/pidato.', 'Menulis naskah ceramah/pidato persuasif dengan argumen yang kuat.', 'Mempraktikkan ceramah/pidato dengan memperhatikan intonasi dan gestur.'],
+};
+const dimensiProfilLulusanOptions = ['Keimanan dan ketakwaan kepada Tuhan YME', 'Kewargaan', 'Penalaran kritis', 'Kreativitas', 'Kolaborasi', 'Kemandirian', 'Kesehatan', 'Komunikasi'];
+const modelPembelajaranOptions = ['Problem-Based Learning (PBL)', 'Project-Based Learning (PjBL)', 'Discovery Learning', 'Inquiry Learning', 'Cooperative Learning'];
+const metodePembelajaranOptions = ['Diskusi', 'Tanya Jawab', 'Presentasi', 'Penugasan', 'Simulasi', 'Eksperimen', 'Demonstrasi'];
+
+// --- HELPER FUNCTIONS ---
+const loadScript = (src) => {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${src}"]`)) {
+      resolve();
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = src;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error(`Gagal memuat skrip ${src}`));
+    document.head.appendChild(script);
+  });
+};
+
+const formatGeneratedText = (text) => {
+  if (!text) return '';
+  return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br />');
+};
+
+// --- MAIN APP COMPONENT ---
+export default function App() {
+  // State untuk inputs
+  const [namaGuru, setNamaGuru] = useState('Murdani, S.Pd');
+  const [nipGuru, setNipGuru] = useState('199008232019031013');
+  const [namaKepsek, setNamaKepsek] = useState('Ida Riliani, SE., M.Pd');
+  const [nipKepsek, setNipKepsek] = useState('196804272005022001');
+  const [fase, setFase] = useState('E');
+  const [semester, setSemester] = useState('Ganjil');
+  const [elemen, setElemen] = useState('Menyimak');
+  const [topik, setTopik] = useState(materiPokokData.E.Ganjil[0]);
+  const [selectedTujuan, setSelectedTujuan] = useState([]);
+  const [alokasiWaktu, setAlokasiWaktu] = useState('2 JP (2 x 45 Menit)');
+  const [modelPembelajaran, setModelPembelajaran] = useState('Problem-Based Learning (PBL)');
+  const [selectedMetode, setSelectedMetode] = useState(['Diskusi', 'Tanya Jawab', 'Presentasi', 'Penugasan']);
+  const [selectedDimensi, setSelectedDimensi] = useState(['Penalaran kritis', 'Kreativitas', 'Komunikasi']);
+  
+  // State untuk logic aplikasi
+  const [generatedModul, setGeneratedModul] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [isPdfReady, setIsPdfReady] = useState(false);
+
+  // Load libraries
+  useEffect(() => {
+    loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js")
+      .then(() => setIsPdfReady(true))
+      .catch(err => console.error(err));
+  }, []);
+
+  useEffect(() => {
+    const newTopicList = materiPokokData[fase][semester];
+    setTopik(newTopicList[0]);
+    setElemen('Menyimak');
+    setSelectedTujuan([]);
+  }, [fase, semester]);
+
+  useEffect(() => { setSelectedTujuan([]); }, [topik]);
+
+  const handleTujuanChange = (e) => {
+    const { value, checked } = e.target;
+    setSelectedTujuan(prev => checked ? [...prev, value] : prev.filter(item => item !== value));
+  };
+  
+  const handleDimensiChange = (e) => {
+    const { value, checked } = e.target;
+    setSelectedDimensi(prev => checked ? [...prev, value] : prev.filter(item => item !== value));
+  };
+  
+  const handleMetodeChange = (e) => {
+    const { value, checked } = e.target;
+    setSelectedMetode(prev => checked ? [...prev, value] : prev.filter(item => item !== value));
+  };
+
+  const handleGenerate = async () => {
+    if (!topik || selectedTujuan.length === 0) {
+      setError('Topik/Materi Pokok dan minimal satu Tujuan Pembelajaran harus dipilih.');
+      return;
+    }
+    setIsLoading(true);
+    setError(null);
+    setGeneratedModul(null);
+
+    const prompt = `
+      Anda adalah AI perancang modul ajar ahli untuk Kurikulum Merdeka, dilatih oleh Murdani, S.Pd dari SMAN 10 Pinrang. Anda sangat memahami pendekatan Pembelajaran Mendalam dan Permendikdasmen terbaru.
+      Tugas: Buat draf MODUL AJAR BAHASA INDONESIA yang sangat lengkap, detail, dan terstruktur berdasarkan input berikut. Hasilkan dalam format JSON yang valid.
+
+      INPUT DATA:
+      - Nama Guru: ${namaGuru} (NIP: ${nipGuru})
+      - Nama Kepala Sekolah: ${namaKepsek} (NIP: ${nipKepsek})
+      - Fase: ${fase}
+      - Kelas & Semester: ${fase === 'E' ? 'X' : 'XI/XII'} / ${semester}
+      - Topik / Materi Pokok: ${topik}
+      - Alokasi Waktu: ${alokasiWaktu}
+      - Capaian Pembelajaran Elemen ${elemen}: ${capaianPembelajaranData[fase][elemen]}
+      - Tujuan Pembelajaran yang Dipilih: ${selectedTujuan.join(', ')}
+      - Dimensi Profil Lulusan yang Ditekankan: ${selectedDimensi.join(', ')}
+      - Model Pembelajaran: ${modelPembelajaran}
+      - Metode Pembelajaran: ${selectedMetode.join(', ')}
+
+      STRUKTUR JSON OUTPUT (WAJIB DIIKUTI):
+      {
+        "informasiUmum": {"namaSekolah": "SMAN 10 Pinrang", "mapel": "Bahasa Indonesia", "kelasSemester": "${fase === 'E' ? 'X' : 'XI/XII'} / ${semester}", "fase": "${fase}", "materiPokok": "${topik}", "alokasiWaktu": "${alokasiWaktu}", "tahunPelajaran": "2025/2026"},
+        "identitas": {"guru": "${namaGuru}", "nipGuru": "${nipGuru}", "kepsek": "${namaKepsek}", "nipKepsek": "${nipKepsek}"},
+        "komponenInti": {"capaianPembelajaran": "${capaianPembelajaranData[fase][elemen]}", "tujuanPembelajaran": ${JSON.stringify(selectedTujuan)}, "pemahamanBermakna": "Buat 1-2 kalimat pemahaman bermakna yang relevan dengan topik '${topik}' dan tujuannya.", "pertanyaanPemantik": ["Buat 2 pertanyaan pemantik yang memprovokasi pemikiran kritis terkait topik '${topik}'."], "dimensiProfilLulusan": ${JSON.stringify(selectedDimensi)}},
+        "kegiatanPembelajaran": {"pendekatan": "Pembelajaran Mendalam, Saintifik, Pedagogi Genre", "model": "${modelPembelajaran}", "metode": "${selectedMetode.join(', ')}", "pendahuluan": "Rancang kegiatan pembuka (sekitar 15 menit) yang menarik: salam, doa, apersepsi yang kuat, penyampaian tujuan & pertanyaan pemantik.", "kegiatanInti": "Rancang alur kegiatan inti (sekitar 60 menit) menggunakan model '${modelPembelajaran}'. Jabarkan langkah-langkahnya secara jelas dan detail untuk topik '${topik}'.", "penutup": "Rancang kegiatan penutup (sekitar 15 menit): kesimpulan interaktif, refleksi siswa (misal: dengan teknik 4F - Facts, Feelings, Findings, Future), dan info pertemuan berikutnya."},
+        "rencanaAsesmen": {"formatif": ["Observasi partisipasi diskusi kelompok.", "Penilaian unjuk kerja saat presentasi.", "Exit ticket di akhir sesi untuk cek pemahaman."], "sumatif": ["Tes tulis untuk mengukur pemahaman konsep (Bobot 40%).", "Proyek pembuatan karya terkait '${topik}' (Bobot 60%)."], "diferensiasi": "Jelaskan bagaimana asesmen akan didiferensiasi (misalnya: produk, proses, atau konten) untuk mengakomodasi gaya belajar siswa."},
+        "mediaSumberBelajar": {"media": ["Platform digital (Google Classroom, Padlet).", "Video pembelajaran relevan dari YouTube Edukasi.", "Infografis dari Canva."], "sumber": ["Buku Teks Bahasa Indonesia Kelas ${fase === 'E' ? 'X' : 'XI/XII'} Kurikulum Merdeka.", "Portal Rumah Belajar Kemdikbud.", "Contoh-contoh otentik teks '${topik}' dari media massa."]}
+      }
+    `;
+    
+    try {
+        const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+        const payload = { contents: chatHistory, generationConfig: { responseMimeType: "application/json" }};
+        const apiKey = "";
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+        const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        if (!response.ok) throw new Error(`API request failed: ${response.statusText}`);
+        const result = await response.json();
+        if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
+            const jsonText = result.candidates[0].content.parts[0].text;
+            const parsedJson = JSON.parse(jsonText);
+            setGeneratedModul(parsedJson);
+        } else { throw new Error("Struktur respons dari API tidak valid."); }
+    } catch (err) {
+        console.error("Error during API call:", err);
+        setError(`Maaf, terjadi kesalahan saat menghasilkan modul. Detail: ${err.message}`);
+    } finally { setIsLoading(false); }
+  };
+  
+  const handleDownloadPDF = () => {
+    if (!generatedModul || !isPdfReady) return;
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const { informasiUmum, identitas, komponenInti, kegiatanPembelajaran, rencanaAsesmen, mediaSumberBelajar } = generatedModul;
+    
+    // Set Font to Helvetica (similar to Arial)
+    doc.setFont('Helvetica');
+
+    let y = 15;
+    const margin = 15;
+    const maxWidth = doc.internal.pageSize.getWidth() - margin * 2;
+    const checkPageBreak = (h) => { if (y + h > doc.internal.pageSize.getHeight() - margin) { doc.addPage(); y = margin; } };
+    const drawTitle = (t) => { checkPageBreak(12); doc.setFontSize(12); doc.setFont('Helvetica', 'bold'); doc.text(t, margin, y); y += 8; doc.setLineWidth(0.5); doc.line(margin, y - 3, margin + maxWidth, y - 3); };
+    const drawSubTitle = (t) => { checkPageBreak(10); doc.setFontSize(10); doc.setFont('Helvetica', 'bold'); doc.text(t, margin, y); y += 6; };
+    const drawText = (t) => { checkPageBreak(8); doc.setFontSize(10); doc.setFont('Helvetica', 'normal'); const s = doc.splitTextToSize(t, maxWidth); doc.text(s, margin, y); y += (s.length * 5) + 3; };
+    const drawList = (items) => { items.forEach(i => { checkPageBreak(8); doc.setFontSize(10); doc.setFont('Helvetica', 'normal'); const s = doc.splitTextToSize(`• ${i}`, maxWidth - 5); doc.text(s, margin + 5, y); y += (s.length * 5); }); y += 4; };
+    
+    doc.setFontSize(16); doc.setFont('Helvetica', 'bold'); doc.text("MODUL AJAR BAHASA INDONESIA", doc.internal.pageSize.getWidth() / 2, y, { align: 'center' }); y += 7;
+    doc.setFontSize(12); doc.setFont('Helvetica', 'normal'); doc.text(informasiUmum.namaSekolah, doc.internal.pageSize.getWidth() / 2, y, { align: 'center' }); y += 12;
+    
+    drawTitle("A. INFORMASI UMUM"); drawText(`Nama Penyusun: ${identitas.guru} (NIP: ${identitas.nipGuru})`); drawText(`Institusi: ${informasiUmum.namaSekolah}`); drawText(`Tahun Pelajaran: ${informasiUmum.tahunPelajaran}`); drawText(`Mata Pelajaran: ${informasiUmum.mapel}`); drawText(`Fase / Kelas: ${informasiUmum.fase} / ${informasiUmum.kelasSemester}`); drawText(`Materi Pokok: ${informasiUmum.materiPokok}`); drawText(`Alokasi Waktu: ${informasiUmum.alokasiWaktu}`); y+= 8;
+    
+    drawTitle("B. KOMPONEN INTI"); drawSubTitle("Capaian Pembelajaran"); drawText(komponenInti.capaianPembelajaran); drawSubTitle("Tujuan Pembelajaran"); drawList(komponenInti.tujuanPembelajaran); drawSubTitle("Pemahaman Bermakna"); drawText(komponenInti.pemahamanBermakna); drawSubTitle("Pertanyaan Pemantik"); drawList(komponenInti.pertanyaanPemantik); drawSubTitle("Dimensi Profil Lulusan"); drawList(komponenInti.dimensiProfilLulusan); y+= 8;
+    
+    drawTitle("C. KEGIATAN PEMBELAJARAN"); drawSubTitle("Pendahuluan"); drawText(kegiatanPembelajaran.pendahuluan); drawSubTitle("Kegiatan Inti"); drawText(kegiatanPembelajaran.kegiatanInti); drawSubTitle("Penutup"); drawText(kegiatanPembelajaran.penutup); y+= 8;
+    
+    drawTitle("D. RENCANA ASESMEN"); drawSubTitle("Asesmen Formatif"); drawList(rencanaAsesmen.formatif); drawSubTitle("Asesmen Sumatif"); drawList(rencanaAsesmen.sumatif); drawSubTitle("Diferensiasi Asesmen"); drawText(rencanaAsesmen.diferensiasi); y+= 8;
+    
+    drawTitle("E. MEDIA DAN SUMBER BELAJAR"); drawSubTitle("Media Pembelajaran"); drawList(mediaSumberBelajar.media); drawSubTitle("Sumber Belajar"); drawList(mediaSumberBelajar.sumber); y+= 8;
+    
+    const sigY = y > 240 ? (doc.addPage(), margin) : y + 20;
+    doc.setFont('Helvetica', 'normal');
+    doc.text(`Mengetahui,`, margin, sigY); doc.text(`Pinrang, ${new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}`, doc.internal.pageSize.getWidth() - margin, sigY, { align: 'right' });
+    doc.text(`Kepala Sekolah`, margin, sigY + 5); doc.text(`Guru Mata Pelajaran`, doc.internal.pageSize.getWidth() - margin, sigY + 5, { align: 'right' });
+    doc.setFont('Helvetica', 'bold'); doc.text(`${identitas.kepsek}`, margin, sigY + 25); doc.text(`${identitas.guru}`, doc.internal.pageSize.getWidth() - margin, sigY + 25, { align: 'right' });
+    doc.setFont('Helvetica', 'normal'); doc.text(`NIP. ${identitas.nipKepsek}`, margin, sigY + 30); doc.text(`NIP. ${identitas.nipGuru}`, doc.internal.pageSize.getWidth() - margin, sigY + 30, { align: 'right' });
+    
+    doc.save(`ModulAjar_${informasiUmum.materiPokok.replace(/\s/g, '_')}.pdf`);
+  };
+
+  const ModulDisplay = ({ modul }) => (
+    <div className="bg-white text-gray-800 rounded-lg p-6 md:p-8 animate-fade-in space-y-8">
+      <h2 className="text-2xl md:text-3xl font-bold text-center text-gray-900">MODUL AJAR: <span className="text-blue-600">{modul.informasiUmum.materiPokok}</span></h2>
+      <DisplaySection title="A. Informasi Umum & Identitas">
+        <p><strong>Nama Guru:</strong> {modul.identitas.guru} (NIP: {modul.identitas.nipGuru})</p>
+        <p><strong>Sekolah:</strong> {modul.informasiUmum.namaSekolah}</p>
+        <p><strong>Kelas/Fase:</strong> {modul.informasiUmum.kelasSemester} / {modul.informasiUmum.fase}</p>
+      </DisplaySection>
+      <DisplaySection title="B. Komponen Inti">
+        <h4 className="font-semibold mt-2">Tujuan Pembelajaran:</h4>
+        <ul className="list-disc list-inside space-y-1">{modul.komponenInti.tujuanPembelajaran.map((t, i) => <li key={`t-${i}`}>{t}</li>)}</ul>
+      </DisplaySection>
+      <DisplaySection title="C. Kegiatan Pembelajaran">
+        <h4 className="font-semibold">Pendahuluan:</h4>
+        <p dangerouslySetInnerHTML={{ __html: formatGeneratedText(modul.kegiatanPembelajaran.pendahuluan) }} />
+        <h4 className="font-semibold mt-2">Kegiatan Inti:</h4>
+        <p dangerouslySetInnerHTML={{ __html: formatGeneratedText(modul.kegiatanPembelajaran.kegiatanInti) }} />
+        <h4 className="font-semibold mt-2">Penutup:</h4>
+        <p dangerouslySetInnerHTML={{ __html: formatGeneratedText(modul.kegiatanPembelajaran.penutup) }} />
+      </DisplaySection>
+    </div>
+  );
+
+  const DisplaySection = ({ title, children }) => (
+    <div className="border-t border-gray-200 pt-4">
+        <h3 className="text-xl font-bold text-gray-800 mb-3">{title}</h3>
+        <div className="pl-2 text-gray-700 space-y-2 text-base">{children}</div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-gray-100 font-sans">
+      <div className="container mx-auto p-4 md:p-8">
+        <header className="text-center mb-8 bg-white p-6 rounded-xl shadow-lg">
+          <div className="flex flex-col items-center justify-center gap-4">
+            <img src="https://sman10pinrang.sch.id/wp-content/uploads/2021/02/cropped-cropped-pake-logo-ini-sman-10-png.png" alt="Logo SMAN 10 Pinrang" className="w-20 h-20 rounded-full border-2 border-blue-500 object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling.style.display = 'flex'; }}/>
+            <div className="w-20 h-20 rounded-full bg-blue-500 text-white items-center justify-center text-4xl hidden"><School/></div>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">MODUL AJAR BAHASA INDONESIA</h1>
+              <p className="text-gray-600">Oleh Murdani, S.Pd (SMAN 10 Pinrang) - KURIKULUM MERDEKA PENDEKATAN DEEP LEARNING</p>
+            </div>
+          </div>
+        </header>
+
+        <main>
+          <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6 md:p-8">
+            <h2 className="text-xl font-bold text-center mb-6 text-gray-800">BAHASA INDONESIA</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                <input type="text" placeholder="Nama Guru" value={namaGuru} onChange={e => setNamaGuru(e.target.value)} className="p-2 border rounded-md" />
+                <input type="text" placeholder="NIP Guru" value={nipGuru} onChange={e => setNipGuru(e.target.value)} className="p-2 border rounded-md" />
+                <input type="text" placeholder="Nama Kepala Sekolah" value={namaKepsek} onChange={e => setNamaKepsek(e.target.value)} className="p-2 border rounded-md" />
+                <input type="text" placeholder="NIP Kepala Sekolah" value={nipKepsek} onChange={e => setNipKepsek(e.target.value)} className="p-2 border rounded-md" />
+                <select value={fase} onChange={e => setFase(e.target.value)} className="p-2 border rounded-md">
+                  <option value="E">Fase E (Kelas X)</option>
+                  <option value="F">Fase F (Kelas XI & XII)</option>
+                </select>
+                <select value={semester} onChange={e => setSemester(e.target.value)} className="p-2 border rounded-md">
+                  <option value="Ganjil">Semester Ganjil</option>
+                  <option value="Genap">Semester Genap</option>
+                </select>
+                <div className="md:col-span-2">
+                  <label className="text-sm font-medium text-gray-700">Topik / Materi Pokok</label>
+                  <select value={topik} onChange={e => setTopik(e.target.value)} className="w-full p-2 border rounded-md mt-1">
+                    {materiPokokData[fase][semester].map(m => <option key={m} value={m}>{m}</option>)}
+                  </select>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="text-sm font-medium text-gray-700">Tujuan Pembelajaran (Pilih yang relevan)</label>
+                  <div className="mt-2 space-y-2 p-3 border rounded-md max-h-40 overflow-y-auto">
+                    {(tujuanPembelajaranData[topik] || []).map((t, i) => (
+                      <div key={i} className="flex items-center">
+                        <input id={`t-${i}`} type="checkbox" value={t} checked={selectedTujuan.includes(t)} onChange={handleTujuanChange} className="h-4 w-4 rounded"/>
+                        <label htmlFor={`t-${i}`} className="ml-2 text-sm">{t}</label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="md:col-span-2">
+                    <label htmlFor="model-pembelajaran" className="text-sm font-medium text-gray-700">Model Pembelajaran</label>
+                    <select id="model-pembelajaran" value={modelPembelajaran} onChange={e => setModelPembelajaran(e.target.value)} className="w-full p-2 border rounded-md mt-1">
+                        {modelPembelajaranOptions.map(model => <option key={model} value={model}>{model}</option>)}
+                    </select>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="text-sm font-medium text-gray-700">Metode Pembelajaran</label>
+                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
+                    {metodePembelajaranOptions.map(metode => (
+                      <div key={metode} className="flex items-center">
+                        <input id={metode} type="checkbox" value={metode} checked={selectedMetode.includes(metode)} onChange={handleMetodeChange} className="h-4 w-4 rounded"/>
+                        <label htmlFor={metode} className="ml-2 text-sm">{metode}</label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                 <div className="md:col-span-2">
+                  <label className="text-sm font-medium text-gray-700">Dimensi Profil Lulusan</label>
+                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
+                    {dimensiProfilLulusanOptions.map(d => (
+                      <div key={d} className="flex items-center">
+                        <input id={d} type="checkbox" value={d} checked={selectedDimensi.includes(d)} onChange={handleDimensiChange} className="h-4 w-4 rounded"/>
+                        <label htmlFor={d} className="ml-2 text-sm">{d}</label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+            </div>
+            <div className="text-center mt-6">
+              <button onClick={handleGenerate} disabled={isLoading} className="inline-flex items-center justify-center gap-2 w-full md:w-auto px-8 py-3 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 transition-all duration-200 disabled:bg-blue-300">
+                {isLoading ? (<><Loader className="animate-spin h-5 w-5" /><span>Menyusun Kerangka...</span></>) : (<><Zap className="h-5 w-5" /><span>Buat Modul Ajar Sekarang</span></>)}
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-8">
+            {error && <div className="max-w-4xl mx-auto bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md flex items-center gap-3"><AlertTriangle className="h-6 w-6"/><div><p className="font-bold">Terjadi Kesalahan</p><p>{error}</p></div></div>}
+            {generatedModul && (
+              <div className="max-w-4xl mx-auto">
+                  <ModulDisplay modul={generatedModul} />
+                  <div className="text-center mt-6">
+                    <button onClick={handleDownloadPDF} disabled={!isPdfReady} className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 bg-red-600 text-white font-bold rounded-lg shadow-md hover:bg-red-700 disabled:bg-red-300">
+                      <Download className="h-5 w-5" />
+                      <span>Unduh PDF</span>
+                    </button>
+                    {!isPdfReady && <p className="text-xs text-gray-500 mt-2 text-center">Memuat library PDF...</p>}
+                  </div>
+              </div>
+            )}
+            {!isLoading && !generatedModul && !error && (
+              <div className="text-center text-gray-500 mt-12 p-6 bg-white rounded-xl shadow-md max-w-lg mx-auto">
+                  <p className="font-semibold">Hasil Modul Ajar akan ditampilkan di sini.</p>
+              </div>
+            )}
+          </div>
+        </main>
+        
+        <footer className="text-center mt-12 text-sm text-gray-500">
+            <p>AI Generator dikembangkan oleh Murdani, S.Pd (SMAN 10 Pinrang) &copy; 2025</p>
+        </footer>
+      </div>
+    </div>
+  );
+}
+
